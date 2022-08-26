@@ -1,6 +1,7 @@
 class Contact {
+  final int? id;
   final String name;
   final String phoneNumber;
 
-  Contact({required this.name, required this.phoneNumber});
+  Contact({required this.name, required this.phoneNumber, this.id});
 }

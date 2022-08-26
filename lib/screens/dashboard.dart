@@ -1,3 +1,5 @@
+import 'package:contacts/database/app_database.dart';
+import 'package:contacts/models/contact.dart';
 import 'package:flutter/material.dart';
 import '../contacts.dart';
 
@@ -6,6 +8,7 @@ class Dashboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    //save(Contact(name: "Hello World", phoneNumber: "55555555555555"));
     return Scaffold(
       appBar: AppBar(
         title: const Text("Dashboard"),

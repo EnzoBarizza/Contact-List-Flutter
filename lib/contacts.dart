@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:contacts/database/app_database.dart';
 import 'package:flutter/material.dart';
 
 import 'models/contact.dart';
@@ -41,14 +44,12 @@ class LiteralContactButton extends StatelessWidget {
 
   void contactListRoute(BuildContext context) {
     Navigator.of(context)
-        .push(MaterialPageRoute(builder: (context) => ContactList()));
+        .push(MaterialPageRoute(builder: (context) => const ContactList()));
   }
 }
 
 class ContactList extends StatefulWidget {
-  ContactList({Key? key}) : super(key: key);
-
-  final List<Contact> contactList = [];
+  const ContactList({Key? key}) : super(key: key);
 
   @override
   State<ContactList> createState() => _ContactListState();
@@ -58,48 +59,75 @@ class _ContactListState extends State<ContactList> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Contact List"),
-        centerTitle: true,
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => addContactRoute(context),
-        backgroundColor: Theme.of(context).primaryColor,
-        child: const Icon(
-          Icons.add,
-          color: Color.fromARGB(255, 230, 230, 230),
+        appBar: AppBar(
+          title: const Text("Contact List"),
+          centerTitle: true,
         ),
-      ),
-      body: ListView.builder(
-        itemCount: widget.contactList.length,
-        itemBuilder: itemBuilder,
-      ),
-    );
+        floatingActionButton: FloatingActionButton(
+          onPressed: () => addContactRoute(context),
+          backgroundColor: Theme.of(context).primaryColor,
+          child: const Icon(
+            Icons.add,
+            color: Color.fromARGB(255, 230, 230, 230),
+          ),
+        ),
+        body: FutureBuilder<List<Contact>>(
+          future: findAll(),
+          builder: ((context, snapshot) {
+            switch (snapshot.connectionState) {
+              case ConnectionState.none:
+                break;
+              case ConnectionState.waiting:
+                Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      CircularProgressIndicator(
+                        color: Theme.of(context).primaryColor,
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: Text('Loading', style: TextStyle(fontSize: 24)),
+                      ),
+                    ],
+                  ),
+                );
+                break;
+              case ConnectionState.active:
+                break;
+              case ConnectionState.done:
+                final List<Contact>? contacts = snapshot.data;
+                return ListView.builder(
+                  itemCount: contacts?.length,
+                  itemBuilder: ((context, i) {
+                    var con = contacts?[i];
+                    return itemBuilder(context, con);
+                  }),
+                );
+            }
+            return const Text('Unknow Error');
+          }),
+        ));
   }
 
-  Widget itemBuilder(BuildContext context, int i) {
-    var item = widget.contactList[i];
+  Widget itemBuilder(BuildContext context, Contact? con) {
+    if (con == null) {
+      return const Card();
+    }
 
     return Card(
       child: ListTile(
-        title: Text(item.name),
-        subtitle: Text(item.phoneNumber),
+        title: Text(con.name),
+        subtitle: Text(con.phoneNumber),
       ),
     );
   }
 
   void addContactRoute(BuildContext context) {
-    Future promise = Navigator.of(context)
-        .push(MaterialPageRoute(builder: (context) => AddContact()));
-
-    promise.then((value) => {
-          if (value is Contact)
-            {
-              setState(() {
-                widget.contactList.add(value);
-              })
-            }
-        });
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => AddContact()))
+        .then((val) => setState(() => {}));
   }
 }
 
@@ -159,6 +187,8 @@ class _AddContactState extends State<AddContact> {
     var phone = widget.phoneController.text;
     var contact = Contact(name: name, phoneNumber: phone);
 
-    Navigator.pop(context, contact);
+    save(contact);
+
+    Navigator.pop(context);
   }
 }
