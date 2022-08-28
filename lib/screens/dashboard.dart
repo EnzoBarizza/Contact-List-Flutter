@@ -1,5 +1,3 @@
-import 'package:contacts/database/app_database.dart';
-import 'package:contacts/models/contact.dart';
 import 'package:flutter/material.dart';
 import '../contacts.dart';
 

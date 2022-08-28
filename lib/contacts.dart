@@ -1,8 +1,10 @@
 import 'dart:io';
 
+import 'package:contacts/common/loading.dart';
 import 'package:contacts/database/app_database.dart';
 import 'package:flutter/material.dart';
 
+import 'database/dao/contact_dao.dart';
 import 'models/contact.dart';
 
 class LiteralContactButton extends StatelessWidget {
@@ -72,27 +74,14 @@ class _ContactListState extends State<ContactList> {
           ),
         ),
         body: FutureBuilder<List<Contact>>(
-          future: findAll(),
+          future: ContactDAO.findAll(),
           builder: ((context, snapshot) {
             switch (snapshot.connectionState) {
               case ConnectionState.none:
+                commonLoading(context);
                 break;
               case ConnectionState.waiting:
-                Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      CircularProgressIndicator(
-                        color: Theme.of(context).primaryColor,
-                      ),
-                      const Padding(
-                        padding: EdgeInsets.all(16.0),
-                        child: Text('Loading', style: TextStyle(fontSize: 24)),
-                      ),
-                    ],
-                  ),
-                );
+                commonLoading(context);
                 break;
               case ConnectionState.active:
                 break;
@@ -106,7 +95,7 @@ class _ContactListState extends State<ContactList> {
                   }),
                 );
             }
-            return const Text('Unknow Error');
+            return commonLoading(context);
           }),
         ));
   }
@@ -117,9 +106,14 @@ class _ContactListState extends State<ContactList> {
     }
 
     return Card(
-      child: ListTile(
-        title: Text(con.name),
-        subtitle: Text(con.phoneNumber),
+      child: Material(
+        child: InkWell(
+          onTap: () => {debugPrint("Clicked")},
+          child: ListTile(
+            title: Text(con.name),
+            subtitle: Text(con.phoneNumber),
+          ),
+        ),
       ),
     );
   }
@@ -187,7 +181,7 @@ class _AddContactState extends State<AddContact> {
     var phone = widget.phoneController.text;
     var contact = Contact(name: name, phoneNumber: phone);
 
-    save(contact);
+    ContactDAO.save(contact);
 
     Navigator.pop(context);
   }
